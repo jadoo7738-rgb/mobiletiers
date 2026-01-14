@@ -1,14 +1,28 @@
+// ================= IMPORTS =================
 const express = require("express");
-const cors = require("cors");
+const path = require("path");
 
+// ================= ROUTES =================
+const playersRoute = require("./routes/players");
+
+// ================= APP =================
 const app = express();
-app.use(cors());
+
+// ================= MIDDLEWARE =================
 app.use(express.json());
 
-app.use("/api", require("./routes/players"));
-app.use("/api", require("./routes/gamemodes"));
+// ================= ROOT TEST =================
+app.get("/", (req, res) => {
+  res.send("MobileTiers API Running");
+});
 
-app.get("/", (_, res) => res.send("MobileTiers API Running"));
+// ================= API ROUTES =================
+app.use("/api/players", playersRoute);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("API running on", PORT));
+// ================= PORT =================
+const PORT = process.env.PORT || 10000;
+
+// ================= START SERVER =================
+app.listen(PORT, () => {
+  console.log(`🚀 MobileTiers API running on port ${PORT}`);
+});
