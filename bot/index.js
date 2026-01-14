@@ -2,7 +2,6 @@
 const { Client, GatewayIntentBits, EmbedBuilder, Partials } = require("discord.js");
 const express = require("express");
 const fs = require("fs");
-const fetch = require("node-fetch");
 
 // ================= KEEP ALIVE (Render/Replit) =================
 const app = express();
@@ -160,3 +159,4 @@ client.on("messageCreate", async (msg) => {
 
 // ================= LOGIN =================
 client.login(TOKEN);
+
