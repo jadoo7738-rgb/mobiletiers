@@ -1,5 +1,5 @@
-[
-  {
+{
+  "Senpaiop": {
     "ign": "Senpaiop",
     "region": "AS",
     "modes": {
@@ -13,7 +13,8 @@
       "smp": "LT4"
     }
   },
-  {
+
+  "ShadowPvP": {
     "ign": "ShadowPvP",
     "region": "EU",
     "modes": {
@@ -27,7 +28,8 @@
       "smp": "LT5"
     }
   },
-  {
+
+  "BlazeX": {
     "ign": "BlazeX",
     "region": "NA",
     "modes": {
@@ -40,5 +42,5 @@
       "mace": "LT5",
       "smp": "LT5"
     }
-  },
- ]
+  }
+}
