@@ -5,6 +5,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/players", require("./routes/players"));
+app.use("/api", require("./routes/players"));
+app.use("/api", require("./routes/gamemodes"));
 
-app.listen(3001, () => console.log("API running on 3001"));
+app.get("/", (_, res) => res.send("MobileTiers API Running"));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("API running on", PORT));
