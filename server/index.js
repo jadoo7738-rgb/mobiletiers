@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // ================= FILE PATH =================
-const DB_FILE = path.join(process.cwd(), "players.json");
+const DB_FILE = path.join(__dirname, "data", "players.json");
 
 // ================= HELPERS =================
 function loadPlayers() {
@@ -104,3 +104,4 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`🚀 API running on ${PORT}`);
 });
+
