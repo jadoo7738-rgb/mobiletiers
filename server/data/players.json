@@ -1,0 +1,44 @@
+[
+  {
+    "ign": "Senpaiop",
+    "region": "AS",
+    "modes": {
+      "cpvp": "LT5",
+      "sword": "LT5",
+      "axe": "LT5",
+      "nethpot": "LT5",
+      "uhc": "LT5",
+      "pot": "LT4",
+      "mace": "LT5",
+      "smp": "LT4"
+    }
+  },
+  {
+    "ign": "ShadowPvP",
+    "region": "EU",
+    "modes": {
+      "cpvp": "LT4",
+      "sword": "LT5",
+      "axe": "LT5",
+      "nethpot": "LT5",
+      "uhc": "LT5",
+      "pot": "LT5",
+      "mace": "LT5",
+      "smp": "LT5"
+    }
+  },
+  {
+    "ign": "BlazeX",
+    "region": "NA",
+    "modes": {
+      "cpvp": "LT5",
+      "sword": "LT5",
+      "axe": "LT5",
+      "nethpot": "LT5",
+      "uhc": "LT5",
+      "pot": "LT5",
+      "mace": "LT5",
+      "smp": "LT5"
+    }
+  },
+ ]
