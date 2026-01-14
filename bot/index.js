@@ -2,6 +2,7 @@
 const { Client, GatewayIntentBits, EmbedBuilder, Partials } = require("discord.js");
 const express = require("express");
 const fs = require("fs");
+const fetch = require("node-fetch");
 
 // ================= KEEP ALIVE (Render/Replit) =================
 const app = express();
@@ -13,7 +14,7 @@ const TOKEN = process.env.TOKEN;
 const ADMIN_ROLE = "1459409372118515998"; // tester role
 const DB_FILE = "./players.json";
 
-// 🔥 PUT YOUR REAL SERVER URL HERE (AFTER HOST)
+// 🔥 BACKEND API (Render)
 const SERVER_API = "https://mobiletiers.onrender.com/api/update-tier";
 
 // ================= TIERS =================
@@ -58,12 +59,12 @@ function combatTag(points) {
 }
 
 // ================= WEBSITE SYNC =================
-async function syncToWebsite(ign, mode, tier) {
+async function syncToWebsite(ign, mode, tier, region) {
   try {
     await fetch(SERVER_API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ign, mode, tier })
+      body: JSON.stringify({ ign, mode, tier, region })
     });
   } catch (e) {
     console.log("❌ Website sync failed");
@@ -87,8 +88,6 @@ client.once("ready", () => {
 // ================= MESSAGE COMMAND =================
 client.on("messageCreate", async (msg) => {
   if (msg.author.bot) return;
-
-  // ================= TIER COMMAND =================
   if (!msg.content.startsWith("!tier")) return;
 
   if (!msg.member.roles.cache.has(ADMIN_ROLE)) {
@@ -99,13 +98,12 @@ client.on("messageCreate", async (msg) => {
   const [_, ign, mode, tier, region] = msg.content.split(" ");
 
   if (!ign || !mode || !tier || !region) {
-    return msg.reply(
-      "Usage: `!tier <IGN> <mode> <HT/LT> <AS/EU>`"
-    );
+    return msg.reply("Usage: `!tier <IGN> <mode> <HT/LT> <AS/EU>`");
   }
 
   const MODE = mode.toLowerCase();
   const TIER = tier.toUpperCase();
+  const REGION = region.toUpperCase();
 
   if (!TIERS[TIER]) return msg.reply("❌ Invalid tier");
 
@@ -113,7 +111,7 @@ client.on("messageCreate", async (msg) => {
 
   if (!db[ign]) {
     db[ign] = {
-      region: region.toUpperCase(),
+      region: REGION,
       createdAt: new Date().toISOString(),
       modes: {}
     };
@@ -121,40 +119,44 @@ client.on("messageCreate", async (msg) => {
 
   const oldTier = db[ign].modes[MODE];
 
-  // 🔥 overwrite tier for that gamemode
+  // overwrite tier
   db[ign].modes[MODE] = TIER;
-  db[ign].region = region.toUpperCase();
+  db[ign].region = REGION;
 
   saveDB(db);
 
   // 🔥 WEBSITE AUTO UPDATE
-  syncToWebsite(ign, MODE, TIER);
+  syncToWebsite(ign, MODE, TIER, REGION);
 
   const points = totalPoints(db[ign]);
   const tag = combatTag(points);
 
   // ================= EMBED =================
   const embed = new EmbedBuilder()
-    .setColor(0xf1c40f)
-    .setAuthor({ name: `${ign}'s Test Results 🏆` })
-    .setThumbnail(`https://minotar.net/helm/${ign}/128`)
+    .setColor(0xf5c542)
+    .setAuthor({ name: `${ign} • Tier Update 🏆` })
+
+    // ❌ FACE REMOVED
+    // ✅ FULL 3D BODY MODEL
+    .setThumbnail(`https://minotar.net/body/${ign}/120`)
+    .setImage(`https://minotar.net/body/${ign}/300`)
+
     .addFields(
-      { name: "Tester", value: `<@${msg.author.id}>`, inline: false },
-      { name: "Region", value: db[ign].region, inline: false },
-      { name: "Username", value: ign, inline: false },
-      { name: "Previous Rank", value: prettyTier(oldTier), inline: false },
-      { name: "Rank Earned", value: prettyTier(TIER), inline: false },
+      { name: "Tester", value: `<@${msg.author.id}>`, inline: true },
+      { name: "Region", value: REGION, inline: true },
+      { name: "Mode", value: MODE.toUpperCase(), inline: true },
+      { name: "Previous Tier", value: prettyTier(oldTier), inline: true },
+      { name: "New Tier", value: prettyTier(TIER), inline: true },
       { name: "Combat Rank", value: `${tag} (${points} pts)`, inline: false }
     )
-    .setFooter({ text: "MobileTiers • Auto Sync Enabled" })
+    .setFooter({ text: "MobileTiers • MCTiers-style system" })
     .setTimestamp();
 
   const sent = await msg.channel.send({ embeds: [embed] });
-  for (const r of ["👑", "🎉", "😱", "😂", "💀"]) {
+  for (const r of ["👑", "🔥", "🏆", "😱", "💀"]) {
     await sent.react(r);
   }
 });
 
 // ================= LOGIN =================
-
 client.login(TOKEN);
