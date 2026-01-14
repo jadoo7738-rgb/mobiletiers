@@ -3,31 +3,34 @@ const fs = require("fs");
 const path = require("path");
 
 const router = express.Router();
-const DB_FILE = path.join(__dirname, "../data/players.json");
+const DB_FILE = path.join(process.cwd(), "players.json");
 
-// ================= LOAD PLAYERS =================
+// ================= LOAD =================
 function loadPlayers() {
   if (!fs.existsSync(DB_FILE)) return [];
   return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
 }
 
-// ================= GET ALL PLAYERS =================
+// ================= ALL PLAYERS =================
 router.get("/", (req, res) => {
   try {
     const players = loadPlayers();
     res.json(players);
-  } catch (err) {
-    console.error(err);
+  } catch (e) {
+    console.error(e);
     res.status(500).json({ error: "Failed to load players" });
   }
 });
 
-// ================= GET PLAYER BY IGN =================
+// ================= SINGLE PLAYER =================
 router.get("/:ign", (req, res) => {
   try {
     const players = loadPlayers();
+
+    const ign = req.params.ign.toLowerCase().trim();
+
     const player = players.find(
-      p => p.ign.toLowerCase() === req.params.ign.toLowerCase()
+      p => p.ign.toLowerCase().trim() === ign
     );
 
     if (!player) {
@@ -35,8 +38,8 @@ router.get("/:ign", (req, res) => {
     }
 
     res.json(player);
-  } catch (err) {
-    console.error(err);
+  } catch (e) {
+    console.error(e);
     res.status(500).json({ error: "Failed to load player" });
   }
 });
