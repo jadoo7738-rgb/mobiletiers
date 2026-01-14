@@ -3,25 +3,18 @@ const fs = require("fs");
 const path = require("path");
 
 const router = express.Router();
+const DB_FILE = path.join(__dirname, "../data/players.json");
 
-const DATA_FILE = path.join(__dirname, "../data/players.json");
-
+// ================= LOAD PLAYERS =================
 function loadPlayers() {
-  if (!fs.existsSync(DATA_FILE)) return {};
-  return JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+  if (!fs.existsSync(DB_FILE)) return [];
+  return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
 }
 
-/**
- * GET /api/players
- * All players (overall leaderboard)
- */
+// ================= GET ALL PLAYERS =================
 router.get("/", (req, res) => {
   try {
-    const db = loadPlayers();
-
-    // 🔥 object → array
-    const players = Object.values(db);
-
+    const players = loadPlayers();
     res.json(players);
   } catch (err) {
     console.error(err);
@@ -29,20 +22,19 @@ router.get("/", (req, res) => {
   }
 });
 
-/**
- * GET /api/players/:ign
- * Single player profile
- */
+// ================= GET PLAYER BY IGN =================
 router.get("/:ign", (req, res) => {
   try {
-    const db = loadPlayers();
-    const ign = req.params.ign;
+    const players = loadPlayers();
+    const player = players.find(
+      p => p.ign.toLowerCase() === req.params.ign.toLowerCase()
+    );
 
-    if (!db[ign]) {
+    if (!player) {
       return res.status(404).json({ error: "Player not found" });
     }
 
-    res.json(db[ign]);
+    res.json(player);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to load player" });
