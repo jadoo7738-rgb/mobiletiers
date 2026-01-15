@@ -3,7 +3,7 @@ const { Client, GatewayIntentBits, Partials } = require("discord.js");
 const express = require("express");
 const fs = require("fs");
 
-// ✅ fetch fix (Render / Railway)
+// ✅ fetch fix (Render / Railway safe)
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
@@ -31,9 +31,9 @@ const TIERS = {
 function loadDB() {
   try {
     if (!fs.existsSync(DB_FILE)) return {};
-    const data = fs.readFileSync(DB_FILE, "utf8").trim();
-    if (!data) return {};
-    return JSON.parse(data);
+    const raw = fs.readFileSync(DB_FILE, "utf8").trim();
+    if (!raw) return {};
+    return JSON.parse(raw);
   } catch {
     return {};
   }
@@ -76,17 +76,18 @@ client.once("ready", () => {
   console.log("🤖 MobileTiers Bot Ready");
 });
 
-// ================= !TIER COMMAND =================
+// ================= MESSAGE COMMANDS =================
 client.on("messageCreate", async (msg) => {
   if (msg.author.bot || !msg.guild) return;
 
-  // ===== WAITLIST PANEL COMMAND =====
+  // ===== WAITLIST PANEL =====
   if (msg.content === "!waitlistpanel") {
     if (!msg.member.roles.cache.has(ADMIN_ROLE))
       return msg.reply("❌ No permission");
 
     const sendPanel = require("./waitlistpanel");
-    return sendPanel(msg.channel);
+    await sendPanel(msg.channel);
+    return;
   }
 
   // ===== TIER COMMAND =====
@@ -112,6 +113,7 @@ client.on("messageCreate", async (msg) => {
   db[ign].region = REGION;
   saveDB(db);
 
+  // 🔥 website sync
   fetch(SERVER_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -141,9 +143,19 @@ client.on("messageCreate", async (msg) => {
   for (const r of ["👑", "🔥", "🏆", "😱", "💀"]) await sent.react(r);
 });
 
-// ================= INTERACTIONS =================
+// ================= INTERACTIONS (CRITICAL FIX) =================
 const interactionHandler = require("./interactionhandler");
-client.on("interactionCreate", interactionHandler);
+
+client.on("interactionCreate", async (interaction) => {
+  try {
+    await interactionHandler(interaction);
+  } catch (err) {
+    console.error("Interaction crash:", err);
+    if (!interaction.replied)
+      interaction.reply({ content: "❌ Interaction failed", ephemeral: true });
+  }
+});
 
 // ================= LOGIN =================
 client.login(TOKEN);
+  
