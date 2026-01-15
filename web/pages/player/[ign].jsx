@@ -5,7 +5,6 @@ export default function Player({ player }) {
     <div>
       <h1>{player.ign}</h1>
       <PlayerModel ign={player.ign} />
-
       {Object.entries(player.gamemodes || {}).map(([m, t]) => (
         <div key={m}>
           {m}: {t}
@@ -18,8 +17,5 @@ export default function Player({ player }) {
 export async function getServerSideProps({ params }) {
   const res = await fetch(process.env.API_URL + "/players/" + params.ign);
   const player = await res.json();
-
-  return {
-    props: { player }
-  };
+  return { props: { player } };
 }
