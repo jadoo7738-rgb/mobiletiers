@@ -2,36 +2,32 @@ import { useEffect, useRef } from "react";
 import { SkinViewer } from "skinview3d";
 import styles from "../styles/mctiers.module.css";
 
-export default function PlayerModel({ ign }: { ign: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const viewerRef = useRef<SkinViewer | null>(null);
+export default function PlayerModel({ ign }) {
+  const ref = useRef(null);
+  const viewerRef = useRef(null);
 
   useEffect(() => {
     if (!ref.current) return;
 
-    // cleanup old viewer
-    if (viewerRef.current) {
-      viewerRef.current.dispose();
-    }
-
     viewerRef.current = new SkinViewer({
-      domElement: ref.current,
-      skin: `https://minotar.net/skin/${ign}`,
-      width: 160,
-      height: 320,
-      renderPaused: false,
+      canvas: ref.current,
+      width: 300,
+      height: 400,
+      skin: `https://mc-heads.net/skin/${ign}`,
     });
 
-    viewerRef.current.camera.position.set(0, 20, 40);
-    viewerRef.current.controls.enableZoom = false;
-    viewerRef.current.controls.enablePan = false;
-    viewerRef.current.controls.enableRotate = true;
-
     return () => {
-      viewerRef.current?.dispose();
-      viewerRef.current = null;
+      if (viewerRef.current) {
+        viewerRef.current.dispose();
+        viewerRef.current = null;
+      }
     };
   }, [ign]);
 
-  return <div ref={ref} className={styles.playerBody} />;
+  return (
+    <canvas
+      ref={ref}
+      className={styles.playerModel}
+    />
+  );
 }
