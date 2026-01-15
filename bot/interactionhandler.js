@@ -97,3 +97,22 @@ module.exports = async (interaction) => {
       interaction.editReply("❌ Something went wrong");
   }
 };
+🔒 Close ticket with \`!close\``
+      );
+
+      // ✅ EDIT reply, NOT reply
+      return interaction.editReply({
+        content: "✅ Ticket created successfully!"
+      });
+    }
+
+  } catch (err) {
+    console.error("Interaction error:", err);
+
+    if (interaction.deferred || interaction.replied) {
+      interaction.editReply("❌ Something went wrong.");
+    } else {
+      interaction.reply({ content: "❌ Something went wrong.", ephemeral: true });
+    }
+  }
+};
