@@ -3,14 +3,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "../../styles/mctiers.module.css";
 
-type Player = {
-  ign: string;
-  region: "AS" | "EU" | "NA";
-  totalPoints: number;
-  modePoints?: Record<string, number>;
-  modes: Record<string, string>;
-};
-
 const VALID_MODES = [
   "nethpot",
   "cpvp",
@@ -137,3 +129,4 @@ export default function GamemodeRanking() {
     </div>
   );
 }
+
