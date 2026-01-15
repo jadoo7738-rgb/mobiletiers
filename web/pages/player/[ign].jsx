@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import PlayerModel from "../../components/PlayerModel";
 
 export default function Player({ player }) {
@@ -6,16 +5,21 @@ export default function Player({ player }) {
     <div>
       <h1>{player.ign}</h1>
       <PlayerModel ign={player.ign} />
-      {Object.entries(player.gamemodes).map(([m, t]: any) => (
-        <div key={m}>{m}: {t}</div>
+
+      {Object.entries(player.gamemodes || {}).map(([m, t]) => (
+        <div key={m}>
+          {m}: {t}
+        </div>
       ))}
     </div>
   );
 }
 
-export async function getServerSideProps({ params }: any) {
+export async function getServerSideProps({ params }) {
   const res = await fetch(process.env.API_URL + "/players/" + params.ign);
   const player = await res.json();
-  return { props: { player } };
-}
 
+  return {
+    props: { player }
+  };
+}
