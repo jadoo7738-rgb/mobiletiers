@@ -1,7 +1,7 @@
 import Link from "next/link";
 import styles from "../styles/mctiers.module.css";
 
-export default function Home({ players }: any) {
+export default function Home({ players }) {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -48,3 +48,4 @@ export async function getServerSideProps() {
   const players = await res.json();
   return { props: { players } };
 }
+
