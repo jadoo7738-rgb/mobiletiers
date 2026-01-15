@@ -25,11 +25,15 @@ const TIERS = {
 
 // ================= DB =================
 function loadDB() {
-  if (!fs.existsSync(DB_FILE)) return {};
-  return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
-}
-function saveDB(db) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+  try {
+    if (!fs.existsSync(DB_FILE)) return {};
+    const data = fs.readFileSync(DB_FILE, "utf8").trim();
+    if (!data) return {}; // empty file safety
+    return JSON.parse(data);
+  } catch (err) {
+    console.log("❌ DB load failed, resetting players.json");
+    return {};
+  }
 }
 
 // ================= HELPERS =================
@@ -152,3 +156,4 @@ client.on("messageCreate", async (msg) => {
 // ================= LOGIN =================
 client.login(TOKEN);
       
+
