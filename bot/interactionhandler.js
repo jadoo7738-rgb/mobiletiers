@@ -42,12 +42,11 @@ module.exports = async (interaction) => {
         )
       );
 
-      return await interaction.showModal(modal);
+      return interaction.showModal(modal);
     }
 
     // ===== MODAL SUBMIT =====
     if (interaction.isModalSubmit() && interaction.customId === "waitlist_modal") {
-
       await interaction.deferReply({ ephemeral: true });
 
       const ign = interaction.fields.getTextInputValue("ign");
@@ -86,20 +85,15 @@ module.exports = async (interaction) => {
 **Region:** ${region}
 **Preferred Server:** ${server}
 
-👤 Player: <@${interaction.user.id}>`
+👤 <@${interaction.user.id}>`
       );
 
       return interaction.editReply("✅ Ticket created successfully!");
     }
 
-  } catch (err) {
-    console.error("❌ Interaction error:", err);
-
-    if (interaction.deferred || interaction.replied) {
-      interaction.editReply("❌ Something went wrong.");
-    } else {
-      interaction.reply({ content: "❌ Something went wrong.", ephemeral: true });
-    }
+  } catch (e) {
+    console.error(e);
+    if (interaction.deferred)
+      interaction.editReply("❌ Something went wrong");
   }
 };
-
