@@ -136,24 +136,56 @@ client.on("messageCreate", async (msg) => {
 
   syncToWebsite(ign, MODE, TIER, REGION);
 
-  const points = totalPoints(db[ign]);
-  const tag = combatTag(points);
-
   const embed = new EmbedBuilder()
-    .setColor(0xf5c542)
-    .setAuthor({ name: `${ign} • Tier Update 🏆` })
-    .setThumbnail(`https://minotar.net/body/${ign}/120`)
-    .setImage(`https://minotar.net/body/${ign}/300`)
-    .addFields(
-      { name: "Tester", value: `<@${msg.author.id}>`, inline: true },
-      { name: "Region", value: REGION, inline: true },
-      { name: "Mode", value: MODE.toUpperCase(), inline: true },
-      { name: "Previous Tier", value: prettyTier(oldTier), inline: true },
-      { name: "New Tier", value: prettyTier(TIER), inline: true },
-      { name: "Combat Rank", value: `${tag} (${points} pts)`, inline: false }
-    )
-    .setFooter({ text: "MobileTiers • System" })
-    .setTimestamp();
+  .setColor(0x0f172a) // dark mctiers style
+  .setAuthor({
+    name: `${ign}'s Test Results 🏆`,
+  })
+
+  // ✅ TOP RIGHT PLAYER MODEL
+  .setThumbnail(`https://minotar.net/body/${ign}/120`)
+
+  .addFields(
+    {
+      name: "Tester",
+      value: `<@${msg.author.id}>`,
+      inline: false
+    },
+    {
+      name: "Region",
+      value: REGION,
+      inline: true
+    },
+    {
+      name: "Mode",
+      value: MODE.toUpperCase(),
+      inline: true
+    },
+    {
+      name: "Username",
+      value: ign,
+      inline: false
+    },
+    {
+      name: "Previous Rank",
+      value: prettyTier(oldTier),
+      inline: false
+    },
+    {
+      name: "Rank Earned",
+      value: prettyTier(TIER),
+      inline: false
+    },
+    {
+      name: "Combat Rank",
+      value: `${tag} (${points} pts)`,
+      inline: false
+    }
+  )
+  .setFooter({
+    text: "MobileTiers • Official Tier System"
+  })
+  .setTimestamp();
 
   const sent = await msg.channel.send({ embeds: [embed] });
   for (const r of ["👑", "🔥", "🏆", "😱", "💀"]) {
@@ -164,5 +196,6 @@ client.on("messageCreate", async (msg) => {
 // ================= LOGIN =================
 client.login(TOKEN);
       
+
 
 
