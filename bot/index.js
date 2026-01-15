@@ -151,4 +151,4 @@ client.on("messageCreate", async (msg) => {
 
 // ================= LOGIN =================
 client.login(TOKEN);
-    
+      
