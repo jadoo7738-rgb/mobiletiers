@@ -22,19 +22,27 @@ const TIERS = {
   HT4: 10, LT4: 8,
   HT5: 5,  LT5: 2
 };
-
 // ================= DB =================
 function loadDB() {
   try {
     if (!fs.existsSync(DB_FILE)) return {};
     const data = fs.readFileSync(DB_FILE, "utf8").trim();
-    if (!data) return {}; // empty file safety
+    if (!data) return {};
     return JSON.parse(data);
   } catch (err) {
     console.log("❌ DB load failed, resetting players.json");
     return {};
   }
 }
+
+function saveDB(db) {
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+  } catch (err) {
+    console.log("❌ DB save failed");
+  }
+}
+
 
 // ================= HELPERS =================
 function prettyTier(tier) {
@@ -156,4 +164,5 @@ client.on("messageCreate", async (msg) => {
 // ================= LOGIN =================
 client.login(TOKEN);
       
+
 
