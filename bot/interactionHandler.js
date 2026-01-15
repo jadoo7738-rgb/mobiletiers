@@ -12,8 +12,9 @@ const ADMIN_ROLE = "1459409372118515998";
 module.exports = async (interaction) => {
   try {
 
-    // ===== BUTTON =====
+    // ================= BUTTON =================
     if (interaction.isButton() && interaction.customId === "waitlist_join") {
+
       const modal = new ModalBuilder()
         .setCustomId("waitlist_modal")
         .setTitle("Join Waitlist");
@@ -42,13 +43,14 @@ module.exports = async (interaction) => {
         new ActionRowBuilder().addComponents(server)
       );
 
-      return interaction.showModal(modal);
+      // ✅ showModal = ACK
+      return await interaction.showModal(modal);
     }
 
-    // ===== MODAL SUBMIT =====
+    // ================= MODAL SUBMIT =================
     if (interaction.isModalSubmit() && interaction.customId === "waitlist_modal") {
 
-      // 🔥 IMPORTANT LINE (FIX)
+      // ✅ MUST
       await interaction.deferReply({ ephemeral: true });
 
       const ign = interaction.fields.getTextInputValue("ign");
@@ -80,29 +82,28 @@ module.exports = async (interaction) => {
         ]
       });
 
-      await channel.send(
+      await channel.send({
+        content:
 `🎟️ **Waitlist Ticket Created**
 
 **IGN:** ${ign}
 **Region:** ${region}
 **Preferred Server:** ${server}
 
-👤 **Player:** <@${interaction.user.id}>
+👤 Player: <@${interaction.user.id}>
+⚠️ Fake info = instant deny`
+      });
 
-🔒 Close ticket with \`!close\``
-      );
-
-      // ✅ EDIT reply, NOT reply
       return interaction.editReply({
         content: "✅ Ticket created successfully!"
       });
     }
 
   } catch (err) {
-    console.error("Interaction error:", err);
+    console.error("❌ Interaction error:", err);
 
     if (interaction.deferred || interaction.replied) {
-      interaction.editReply("❌ Something went wrong.");
+      interaction.editReply({ content: "❌ Something went wrong." });
     } else {
       interaction.reply({ content: "❌ Something went wrong.", ephemeral: true });
     }
