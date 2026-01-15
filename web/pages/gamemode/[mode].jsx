@@ -18,7 +18,7 @@ export default function GamemodeRanking() {
   const router = useRouter();
   const { mode } = router.query;
 
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -129,4 +129,5 @@ export default function GamemodeRanking() {
     </div>
   );
 }
+
 
