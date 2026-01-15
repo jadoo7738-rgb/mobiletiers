@@ -5,7 +5,7 @@ export default function Home({ players }) {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <img src="/logo.png" />
+        <img src="/logo.png" alt="Logo" />
         <h1>MobileTiers</h1>
       </div>
 
@@ -31,7 +31,7 @@ export default function Home({ players }) {
             </div>
 
             <div className={styles.player}>
-              <img src={`https://mc-heads.net/avatar/${p.ign}`} />
+              <img src={`https://mc-heads.net/avatar/${p.ign}`} alt={p.ign} />
               <span className={styles.name}>{p.ign}</span>
             </div>
 
