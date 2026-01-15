@@ -147,6 +147,11 @@ client.on("messageCreate", async (msg) => {
   const sent = await msg.channel.send({ embeds: [embed] });
   for (const r of ["👑", "🔥", "🏆", "😱", "💀"]) await sent.react(r);
 });
+const interactionHandler = require("./interactionhandler");
 
+client.on("interactionCreate", async (interaction) => {
+  await interactionHandler(interaction);
+});
 // ================= LOGIN =================
 client.login(TOKEN);
+
