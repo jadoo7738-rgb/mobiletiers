@@ -22,14 +22,14 @@ export default function GamemodeRanking() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!mode || !VALID_MODES.includes(mode as string)) return;
+    if (!mode || !VALID_MODES.includes(mode)) return;
 
     setLoading(true);
 
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/gamemode/${mode}`)
       .then((res) => res.json())
       .then((data) => {
-        setPlayers(data);
+        setPlayers(data || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -56,7 +56,7 @@ export default function GamemodeRanking() {
         <div className={styles.modeHeader}>
           <img
             src={`/gamemodes/${mode}.svg`}
-            alt={String(mode)}
+            alt={mode}
             className={styles.modeIcon}
           />
           <h1>{String(mode).toUpperCase()} Rankings</h1>
@@ -74,10 +74,11 @@ export default function GamemodeRanking() {
 
       {/* ===== PLAYERS ===== */}
       {players.map((p, i) => {
-        const tier = p.modes?.[mode as string] ?? "Unranked";
+        const tier =
+          (p.modes && p.modes[mode]) || "Unranked";
+
         const points =
-          p.modePoints?.[mode as string] ??
-          0;
+          (p.modePoints && p.modePoints[mode]) || 0;
 
         return (
           <Link
@@ -105,6 +106,7 @@ export default function GamemodeRanking() {
               <img
                 src={`https://minotar.net/avatar/${p.ign}/64`}
                 className={styles.avatar}
+                alt={p.ign}
               />
               <span className={styles.name}>{p.ign}</span>
             </div>
@@ -129,5 +131,3 @@ export default function GamemodeRanking() {
     </div>
   );
 }
-
-
