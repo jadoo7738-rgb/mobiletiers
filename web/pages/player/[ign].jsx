@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import PlayerModel from "../../components/PlayerModel";
 
-export default function Player({ player }: any) {
+export default function Player({ player }) {
   return (
     <div>
       <h1>{player.ign}</h1>
@@ -18,3 +18,4 @@ export async function getServerSideProps({ params }: any) {
   const player = await res.json();
   return { props: { player } };
 }
+
