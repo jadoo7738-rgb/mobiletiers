@@ -3,6 +3,10 @@ const { Client, GatewayIntentBits, EmbedBuilder, Partials } = require("discord.j
 const express = require("express");
 const fs = require("fs");
 
+// ✅ IMPORTANT: fetch fix (Railway / Render safe)
+const fetch = (...args) =>
+  import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
 // ================= KEEP ALIVE =================
 const app = express();
 app.get("/", (req, res) => res.send("Bot is running"));
@@ -10,7 +14,7 @@ app.listen(process.env.PORT || 3000);
 
 // ================= CONFIG =================
 const TOKEN = process.env.TOKEN;
-const ADMIN_ROLE = "1459409372118515998"; // tester role
+const ADMIN_ROLE = "1459409372118515998";
 const DB_FILE = "./players.json";
 const SERVER_API = "https://mobiletiers.onrender.com/api/update-tier";
 
@@ -22,40 +26,36 @@ const TIERS = {
   HT4: 10, LT4: 8,
   HT5: 5,  LT5: 2
 };
+
 // ================= DB =================
 function loadDB() {
   try {
     if (!fs.existsSync(DB_FILE)) return {};
-    const data = fs.readFileSync(DB_FILE, "utf8").trim();
-    if (!data) return {};
-    return JSON.parse(data);
-  } catch (err) {
-    console.log("❌ DB load failed, resetting players.json");
+    const raw = fs.readFileSync(DB_FILE, "utf8").trim();
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch {
     return {};
   }
 }
 
 function saveDB(db) {
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-  } catch (err) {
-    console.log("❌ DB save failed");
-  }
+  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
 }
-
 
 // ================= HELPERS =================
 function prettyTier(tier) {
   if (!tier) return "Unranked";
   return tier.replace("HT", "High Tier ").replace("LT", "Low Tier ");
 }
+
 function totalPoints(player) {
-  if (!player.modes) return 0;
-  return Object.values(player.modes).reduce(
-    (sum, tier) => sum + (TIERS[tier] || 0),
+  return Object.values(player.modes || {}).reduce(
+    (s, t) => s + (TIERS[t] || 0),
     0
   );
 }
+
 function combatTag(points) {
   if (points >= 400) return "Combat Grandmaster";
   if (points >= 300) return "Combat Master";
@@ -83,7 +83,7 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMembers // 🔥 IMPORTANT
+    GatewayIntentBits.GuildMembers
   ],
   partials: [Partials.Channel]
 });
@@ -95,25 +95,14 @@ client.once("ready", () => {
 // ================= COMMAND =================
 client.on("messageCreate", async (msg) => {
   if (msg.author.bot) return;
-  if (!msg.guild) return; // ❌ DM ignore
+  if (!msg.guild) return;
   if (!msg.content.startsWith("!tier")) return;
 
-  // SAFETY
-  if (!msg.member) {
-    return msg.reply("❌ Member cache error, try again");
-  }
-
-  // ROLE CHECK
   if (!msg.member.roles.cache.has(ADMIN_ROLE)) {
     return msg.reply("❌ Only testers can use this command");
   }
 
-  const args = msg.content.trim().split(/\s+/);
-  const ign = args[1];
-  const mode = args[2];
-  const tier = args[3];
-  const region = args[4];
-
+  const [, ign, mode, tier, region] = msg.content.trim().split(/\s+/);
   if (!ign || !mode || !tier || !region) {
     return msg.reply("Usage: `!tier <IGN> <mode> <HT/LT> <AS/EU>`");
   }
@@ -125,77 +114,39 @@ client.on("messageCreate", async (msg) => {
   if (!TIERS[TIER]) return msg.reply("❌ Invalid tier");
 
   const db = loadDB();
-  if (!db[ign]) {
-    db[ign] = { region: REGION, modes: {} };
-  }
+  if (!db[ign]) db[ign] = { region: REGION, modes: {} };
 
   const oldTier = db[ign].modes[MODE];
   db[ign].modes[MODE] = TIER;
   db[ign].region = REGION;
   saveDB(db);
 
+  // 🔥 SYNC TO WEBSITE
   syncToWebsite(ign, MODE, TIER, REGION);
 
+  // ✅ MISSING PART FIXED
+  const points = totalPoints(db[ign]);
+  const tag = combatTag(points);
+
+  // ================= EMBED =================
   const embed = new EmbedBuilder()
-  .setColor(0x0f172a) // dark mctiers style
-  .setAuthor({
-    name: `${ign}'s Test Results 🏆`,
-  })
-
-  // ✅ TOP RIGHT PLAYER MODEL
-  .setThumbnail(`https://minotar.net/body/${ign}/120`)
-
-  .addFields(
-    {
-      name: "Tester",
-      value: `<@${msg.author.id}>`,
-      inline: false
-    },
-    {
-      name: "Region",
-      value: REGION,
-      inline: true
-    },
-    {
-      name: "Mode",
-      value: MODE.toUpperCase(),
-      inline: true
-    },
-    {
-      name: "Username",
-      value: ign,
-      inline: false
-    },
-    {
-      name: "Previous Rank",
-      value: prettyTier(oldTier),
-      inline: false
-    },
-    {
-      name: "Rank Earned",
-      value: prettyTier(TIER),
-      inline: false
-    },
-    {
-      name: "Combat Rank",
-      value: `${tag} (${points} pts)`,
-      inline: false
-    }
-  )
-  .setFooter({
-    text: "MobileTiers • Official Tier System"
-  })
-  .setTimestamp();
+    .setColor(0x0f172a)
+    .setAuthor({ name: `${ign}'s Test Results 🏆` })
+    .setThumbnail(`https://minotar.net/body/${ign}/120`)
+    .addFields(
+      { name: "Tester", value: `<@${msg.author.id}>` },
+      { name: "Region", value: REGION, inline: true },
+      { name: "Mode", value: MODE.toUpperCase(), inline: true },
+      { name: "Previous Rank", value: prettyTier(oldTier) },
+      { name: "Rank Earned", value: prettyTier(TIER) },
+      { name: "Combat Rank", value: `${tag} (${points} pts)` }
+    )
+    .setFooter({ text: "MobileTiers • Official Tier System" })
+    .setTimestamp();
 
   const sent = await msg.channel.send({ embeds: [embed] });
-  for (const r of ["👑", "🔥", "🏆", "😱", "💀"]) {
-    await sent.react(r);
-  }
+  for (const r of ["👑", "🔥", "🏆", "😱", "💀"]) await sent.react(r);
 });
 
 // ================= LOGIN =================
 client.login(TOKEN);
-      
-
-
-
