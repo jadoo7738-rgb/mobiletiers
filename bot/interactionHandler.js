@@ -12,45 +12,42 @@ const ADMIN_ROLE = "1459409372118515998";
 module.exports = async (interaction) => {
   try {
 
-    // ================= BUTTON =================
+    // ===== BUTTON =====
     if (interaction.isButton() && interaction.customId === "waitlist_join") {
-
       const modal = new ModalBuilder()
         .setCustomId("waitlist_modal")
         .setTitle("Join Waitlist");
 
-      const ign = new TextInputBuilder()
-        .setCustomId("ign")
-        .setLabel("Minecraft IGN")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      const region = new TextInputBuilder()
-        .setCustomId("region")
-        .setLabel("Region (AS / EU)")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      const server = new TextInputBuilder()
-        .setCustomId("server")
-        .setLabel("Preferred Server")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
       modal.addComponents(
-        new ActionRowBuilder().addComponents(ign),
-        new ActionRowBuilder().addComponents(region),
-        new ActionRowBuilder().addComponents(server)
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("ign")
+            .setLabel("Minecraft IGN")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+        ),
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("region")
+            .setLabel("Region (AS / EU)")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+        ),
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("server")
+            .setLabel("Preferred Server")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+        )
       );
 
-      // ✅ showModal = ACK
       return await interaction.showModal(modal);
     }
 
-    // ================= MODAL SUBMIT =================
+    // ===== MODAL SUBMIT =====
     if (interaction.isModalSubmit() && interaction.customId === "waitlist_modal") {
 
-      // ✅ MUST
       await interaction.deferReply({ ephemeral: true });
 
       const ign = interaction.fields.getTextInputValue("ign");
@@ -82,28 +79,24 @@ module.exports = async (interaction) => {
         ]
       });
 
-      await channel.send({
-        content:
+      await channel.send(
 `🎟️ **Waitlist Ticket Created**
 
 **IGN:** ${ign}
 **Region:** ${region}
 **Preferred Server:** ${server}
 
-👤 Player: <@${interaction.user.id}>
-⚠️ Fake info = instant deny`
-      });
+👤 Player: <@${interaction.user.id}>`
+      );
 
-      return interaction.editReply({
-        content: "✅ Ticket created successfully!"
-      });
+      return interaction.editReply("✅ Ticket created successfully!");
     }
 
   } catch (err) {
     console.error("❌ Interaction error:", err);
 
     if (interaction.deferred || interaction.replied) {
-      interaction.editReply({ content: "❌ Something went wrong." });
+      interaction.editReply("❌ Something went wrong.");
     } else {
       interaction.reply({ content: "❌ Something went wrong.", ephemeral: true });
     }
