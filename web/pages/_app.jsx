@@ -1,6 +1,5 @@
-import type { AppProps } from "next/app";
 import "../styles/mctiers.module.css";
 
-export default function App({ Component, pageProps }: AppProps) {
+export default function App({ Component, pageProps }) {
   return <Component {...pageProps} />;
 }
