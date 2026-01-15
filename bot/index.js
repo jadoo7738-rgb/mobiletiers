@@ -3,7 +3,7 @@ const { Client, GatewayIntentBits, EmbedBuilder, Partials } = require("discord.j
 const express = require("express");
 const fs = require("fs");
 
-// ================= KEEP ALIVE (Render/Replit) =================
+// ================= KEEP ALIVE =================
 const app = express();
 app.get("/", (req, res) => res.send("Bot is running"));
 app.listen(process.env.PORT || 3000);
@@ -12,8 +12,6 @@ app.listen(process.env.PORT || 3000);
 const TOKEN = process.env.TOKEN;
 const ADMIN_ROLE = "1459409372118515998"; // tester role
 const DB_FILE = "./players.json";
-
-// 🔥 BACKEND API (Render)
 const SERVER_API = "https://mobiletiers.onrender.com/api/update-tier";
 
 // ================= TIERS =================
@@ -30,7 +28,6 @@ function loadDB() {
   if (!fs.existsSync(DB_FILE)) return {};
   return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
 }
-
 function saveDB(db) {
   fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
 }
@@ -40,7 +37,6 @@ function prettyTier(tier) {
   if (!tier) return "Unranked";
   return tier.replace("HT", "High Tier ").replace("LT", "Low Tier ");
 }
-
 function totalPoints(player) {
   if (!player.modes) return 0;
   return Object.values(player.modes).reduce(
@@ -48,7 +44,6 @@ function totalPoints(player) {
     0
   );
 }
-
 function combatTag(points) {
   if (points >= 400) return "Combat Grandmaster";
   if (points >= 300) return "Combat Master";
@@ -65,7 +60,7 @@ async function syncToWebsite(ign, mode, tier, region) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ign, mode, tier, region })
     });
-  } catch (e) {
+  } catch {
     console.log("❌ Website sync failed");
   }
 }
@@ -75,7 +70,8 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers // 🔥 IMPORTANT
   ],
   partials: [Partials.Channel]
 });
@@ -84,17 +80,27 @@ client.once("ready", () => {
   console.log("🤖 MobileTiers Bot Ready");
 });
 
-// ================= MESSAGE COMMAND =================
+// ================= COMMAND =================
 client.on("messageCreate", async (msg) => {
   if (msg.author.bot) return;
+  if (!msg.guild) return; // ❌ DM ignore
   if (!msg.content.startsWith("!tier")) return;
 
+  // SAFETY
+  if (!msg.member) {
+    return msg.reply("❌ Member cache error, try again");
+  }
+
+  // ROLE CHECK
   if (!msg.member.roles.cache.has(ADMIN_ROLE)) {
     return msg.reply("❌ Only testers can use this command");
   }
 
-  // !tier IGN MODE TIER REGION
-  const [_, ign, mode, tier, region] = msg.content.split(" ");
+  const args = msg.content.trim().split(/\s+/);
+  const ign = args[1];
+  const mode = args[2];
+  const tier = args[3];
+  const region = args[4];
 
   if (!ign || !mode || !tier || !region) {
     return msg.reply("Usage: `!tier <IGN> <mode> <HT/LT> <AS/EU>`");
@@ -107,39 +113,25 @@ client.on("messageCreate", async (msg) => {
   if (!TIERS[TIER]) return msg.reply("❌ Invalid tier");
 
   const db = loadDB();
-
   if (!db[ign]) {
-    db[ign] = {
-      region: REGION,
-      createdAt: new Date().toISOString(),
-      modes: {}
-    };
+    db[ign] = { region: REGION, modes: {} };
   }
 
   const oldTier = db[ign].modes[MODE];
-
-  // overwrite tier
   db[ign].modes[MODE] = TIER;
   db[ign].region = REGION;
-
   saveDB(db);
 
-  // 🔥 WEBSITE AUTO UPDATE
   syncToWebsite(ign, MODE, TIER, REGION);
 
   const points = totalPoints(db[ign]);
   const tag = combatTag(points);
 
-  // ================= EMBED =================
   const embed = new EmbedBuilder()
     .setColor(0xf5c542)
     .setAuthor({ name: `${ign} • Tier Update 🏆` })
-
-    // ❌ FACE REMOVED
-    // ✅ FULL 3D BODY MODEL
     .setThumbnail(`https://minotar.net/body/${ign}/120`)
     .setImage(`https://minotar.net/body/${ign}/300`)
-
     .addFields(
       { name: "Tester", value: `<@${msg.author.id}>`, inline: true },
       { name: "Region", value: REGION, inline: true },
@@ -148,7 +140,7 @@ client.on("messageCreate", async (msg) => {
       { name: "New Tier", value: prettyTier(TIER), inline: true },
       { name: "Combat Rank", value: `${tag} (${points} pts)`, inline: false }
     )
-    .setFooter({ text: "MobileTiers • MCTiers-style system" })
+    .setFooter({ text: "MobileTiers • System" })
     .setTimestamp();
 
   const sent = await msg.channel.send({ embeds: [embed] });
@@ -159,4 +151,4 @@ client.on("messageCreate", async (msg) => {
 
 // ================= LOGIN =================
 client.login(TOKEN);
-
+    
