@@ -86,18 +86,7 @@ module.exports = async (interaction) => {
 **Preferred Server:** ${server}
 
 👤 <@${interaction.user.id}>`
-      );
-
-      return interaction.editReply("✅ Ticket created successfully!");
-    }
-
-  } catch (e) {
-    console.error(e);
-    if (interaction.deferred)
-      interaction.editReply("❌ Something went wrong");
-  }
-};
-🔒 Close ticket with \`!close\``
+    🔒 Close ticket with \`!close\``
       );
 
       // ✅ EDIT reply, NOT reply
