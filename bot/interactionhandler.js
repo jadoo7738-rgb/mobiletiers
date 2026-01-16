@@ -85,8 +85,9 @@ module.exports = async (interaction) => {
 **Region:** ${region}
 **Preferred Server:** ${server}
 
-👤 <@${interaction.user.id}>`
-    🔒 Close ticket with \`!close\``
+👤 **Player:** <@${interaction.user.id}>
+
+🔒 Close ticket with \`!close\``
       );
 
       // ✅ EDIT reply, NOT reply
