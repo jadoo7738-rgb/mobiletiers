@@ -5,25 +5,30 @@ export default function Player() {
   const router = useRouter();
   const { ign } = router.query;
   const [player, setPlayer] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!ign) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/players/${ign}`)
-      .then(res => res.json())
+    fetch(`/api/players/${ign}`)
+      .then(res => {
+        if (!res.ok) throw new Error("API failed");
+        return res.json();
+      })
       .then(setPlayer)
       .catch(err => {
         console.error(err);
+        setError("Player not found");
       });
   }, [ign]);
 
   if (!ign) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
   if (!player) return <p>Loading player...</p>;
 
   return (
     <div>
       <h1>{player.ign}</h1>
-      {/* PlayerModel REMOVED */}
     </div>
   );
 }
