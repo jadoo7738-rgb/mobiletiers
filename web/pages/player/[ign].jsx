@@ -8,18 +8,22 @@ export default function Player() {
 
   useEffect(() => {
     if (!ign) return;
-    fetch(process.env.NEXT_PUBLIC_API_URL + "/players/" + ign)
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/players/${ign}`)
       .then(res => res.json())
-      .then(setPlayer);
+      .then(setPlayer)
+      .catch(err => {
+        console.error(err);
+      });
   }, [ign]);
 
-  if (!player) return <p>Loading...</p>;
+  if (!ign) return <p>Loading...</p>;
+  if (!player) return <p>Loading player...</p>;
 
   return (
     <div>
       <h1>{player.ign}</h1>
-      <PlayerModel />
+      {/* PlayerModel REMOVED */}
     </div>
   );
 }
-
