@@ -1,6 +1,5 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import PlayerModel from "../../components/PlayerModel";
 
 export default function Player() {
   const router = useRouter();
@@ -19,7 +18,8 @@ export default function Player() {
   return (
     <div>
       <h1>{player.ign}</h1>
-      <PlayerModel ign={player.ign} />
+      <PlayerModel />
     </div>
   );
 }
+
