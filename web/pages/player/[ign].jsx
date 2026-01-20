@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 export default function Player() {
   const router = useRouter();
   const { ign } = router.query;
+
   const [player, setPlayer] = useState(null);
   const [error, setError] = useState(null);
 
@@ -11,14 +12,21 @@ export default function Player() {
     if (!ign) return;
 
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/players/${ign}`)
-      .then(res => {
-        if (!res.ok) throw new Error("Player not found");
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Player not found");
+        }
         return res.json();
       })
-      .then(setPlayer)
-      .catch(err => {
-        console.error(err);
-        setError("Player not found");
+      .then((data) => {
+        setPlayer(data);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error("FETCH ERROR:", err.message);
+        setError(err.message);
+        setPlayer(null);
       });
   }, [ign]);
 
