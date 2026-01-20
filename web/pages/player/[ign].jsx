@@ -10,9 +10,9 @@ export default function Player() {
   useEffect(() => {
     if (!ign) return;
 
-    fetch(`/api/players/${ign}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/players/${ign}`)
       .then(res => {
-        if (!res.ok) throw new Error("API failed");
+        if (!res.ok) throw new Error("Player not found");
         return res.json();
       })
       .then(setPlayer)
